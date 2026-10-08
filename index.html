@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f3f0e7" />
+    <meta name="description" content="An interactive ASK and BFSK transmitter, channel, and receiver lab." />
+    <title>Signal Lab — Digital Communications</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <a class="wordmark" href="#top" aria-label="Signal Lab home"><span class="mark">S</span><span>SIGNAL<br />LAB</span></a>
+        <div class="course-label">DIGITAL COMMUNICATIONS <span>/</span> EXPERIMENT 09</div>
+        <div class="live-status"><span></span> SIMULATOR READY</div>
+      </header>
+
+      <main id="top">
+        <section class="page-heading">
+          <div>
+            <p class="kicker">MODULATION / DETECTION</p>
+            <h1>Bits in motion<span>.</span></h1>
+            <p class="lede">Build a signal, send it through noise, and see what the receiver can recover.</p>
+          </div>
+          <div class="heading-index"><span>LAB NOTE</span><strong>09—01</strong></div>
+        </section>
+
+        <section class="mode-row" aria-label="Modulation scheme">
+          <div class="mode-switch" role="tablist" aria-label="Modulation scheme">
+            <button class="mode-tab is-active" id="ask-tab" role="tab" aria-selected="true" data-mode="ask">ASK <small>amplitude shift</small></button>
+            <button class="mode-tab" id="bfsk-tab" role="tab" aria-selected="false" data-mode="bfsk">BFSK <small>frequency shift</small></button>
+          </div>
+          <p class="mode-caption" id="mode-caption">Two amplitudes, one carrier. The receiver measures a single coherent correlation.</p>
+        </section>
+
+        <section class="lab-layout">
+          <aside class="controls-panel" aria-label="Simulation controls">
+            <div class="panel-title"><span>01 / SETUP</span><span class="tiny-rule"></span></div>
+
+            <label class="field-label" for="bits-input">BIT SEQUENCE <span>up to 16 bits</span></label>
+            <input id="bits-input" class="bits-input" type="text" value="10110010" maxlength="16" inputmode="numeric" autocomplete="off" aria-describedby="bits-error" />
+            <div class="bits-preview" id="bits-preview" aria-label="Current bit sequence"></div>
+            <p class="field-error" id="bits-error" aria-live="polite"></p>
+
+            <div class="input-grid">
+              <label class="numeric-field">BIT PERIOD <span class="unit-input"><input id="tb-input" type="number" min="2" max="50" step="1" value="10" /><b>ms</b></span></label>
+              <label class="numeric-field" id="ask-carrier-field">CARRIER <span class="unit-input"><input id="ask-carrier-input" type="number" min="50" max="1000" step="10" value="200" /><b>Hz</b></span></label>
+            </div>
+
+            <div class="tone-fields" id="tone-fields" hidden>
+              <div class="input-grid">
+                <label class="numeric-field">TONE FOR 0 <span class="unit-input"><input id="f0-input" type="number" min="25" max="1500" step="25" value="100" /><b>Hz</b></span></label>
+                <label class="numeric-field">TONE FOR 1 <span class="unit-input"><input id="f1-input" type="number" min="25" max="1500" step="25" value="200" /><b>Hz</b></span></label>
+              </div>
+              <p class="spacing-note" id="spacing-note"></p>
+            </div>
+
+            <div class="amplitude-fields" id="amplitude-fields">
+              <div class="field-label">ASK LEVELS <span>relative amplitude</span></div>
+              <div class="level-control"><span>0</span><input id="a0-input" type="range" min="0" max="0.8" step="0.05" value="0.2" /><output id="a0-output">0.20</output></div>
+              <div class="level-control"><span>1</span><input id="a1-input" type="range" min="0.2" max="1.4" step="0.05" value="1" /><output id="a1-output">1.00</output></div>
+            </div>
+
+            <div class="noise-control">
+              <div class="noise-label"><label for="snr-input">CHANNEL NOISE</label><output id="snr-output">14 dB</output></div>
+              <input id="snr-input" type="range" min="0" max="30" step="1" value="14" />
+              <div class="range-ends"><span>0 dB / noisy</span><span>30 dB / clean</span></div>
+            </div>
+
+            <div class="detector-control" id="detector-control" hidden>
+              <span class="field-label">RECEIVER DETECTOR</span>
+              <div class="detector-switch" role="group" aria-label="BFSK receiver detector">
+                <button class="detector-tab is-active" data-detector="coherent" aria-pressed="true">Coherent</button>
+                <button class="detector-tab" data-detector="noncoherent" aria-pressed="false">Noncoherent</button>
+              </div>
+              <p id="detector-description">Correlate against both known-phase tones.</p>
+            </div>
+
+            <button class="run-button" id="run-button"><span>RUN TRANSMISSION</span><span class="run-icon" aria-hidden="true">↗</span></button>
+            <p class="run-hint">Change a control to rerun the link.</p>
+          </aside>
+
+          <div class="results-column">
+            <section class="scope-panel" aria-label="Signal waveform viewer">
+              <div class="scope-header">
+                <div><div class="panel-title"><span>02 / SIGNAL TRACE</span><span class="trace-dot"></span></div><h2 id="scope-title">Amplitude-shift keyed signal</h2></div>
+                <div class="scope-readout"><span id="scope-readout-label">CARRIER</span><strong id="scope-readout-value">200 Hz</strong></div>
+              </div>
+              <div class="trace-tabs" role="tablist" aria-label="Waveform stage">
+                <button class="trace-tab is-active" data-stage="message" role="tab" aria-selected="true">Message</button>
+                <button class="trace-tab" data-stage="transmit" role="tab" aria-selected="false">Transmitter</button>
+                <button class="trace-tab" data-stage="channel" role="tab" aria-selected="false">Channel</button>
+                <button class="trace-tab" data-stage="receive" role="tab" aria-selected="false">Receiver</button>
+              </div>
+              <div class="canvas-wrap"><canvas id="signal-canvas" aria-label="Waveform plot"></canvas><div class="canvas-empty" id="canvas-empty" hidden></div></div>
+              <div class="axis-footer"><span id="axis-left">0 ms</span><span>TIME</span><span id="axis-right">80 ms</span></div>
+              <div class="trace-legend"><span><i class="legend-swatch signal-swatch"></i><b id="legend-label">Input bits</b></span><span id="trace-stage-label">SOURCE MESSAGE</span></div>
+            </section>
+
+            <section class="receiver-panel" aria-label="Receiver output">
+              <div class="receiver-heading"><div class="panel-title"><span>03 / RECEIVER OUTPUT</span><span class="tiny-rule"></span></div><div class="accuracy" id="accuracy">8 / 8 <span>correct</span></div></div>
+              <div class="decision-row" id="decision-row" aria-label="Detected bits"></div>
+              <div class="receiver-foot"><span id="detector-metric-label">CORRELATOR OUTPUT</span><span id="detector-metric">Decision threshold: 0.60</span></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="orthogonality" id="orthogonality" aria-label="BFSK orthogonality check">
+          <div class="orth-copy" id="orth-copy">
+            <p class="kicker">THE REQUIRED CHECK / BFSK</p>
+            <h2>Are the tones<br />orthogonal?</h2>
+            <p>For noncoherent detection, each tone occupies a two-dimensional sine/cosine signal space. Orthogonal spaces require tone spacing of an integer multiple of <span class="math">1 / T<sub>b</sub></span>; the minimum is <span class="math">1 / T<sub>b</sub></span>. Coherent BFSK can use a minimum spacing of <span class="math">1 / (2T<sub>b</sub>)</span> when the carrier phases are known and chosen for orthogonality.</p>
+            <div class="orth-status" id="orth-status"><span></span><b>ORTHOGONAL BASIS</b></div>
+          </div>
+          <div class="matrix-wrap">
+            <div class="matrix-heading"><span>NUMERICAL INNER PRODUCTS</span><span>ONE BIT INTERVAL · NORMALIZED</span></div>
+            <div class="matrix-meta" id="matrix-meta"></div>
+            <div class="matrix-table-wrap"><table class="matrix-table" id="matrix-table" aria-label="BFSK basis signal inner products"></table></div>
+            <p class="matrix-caption">Basis: cos(2πf₀t), sin(2πf₀t), cos(2πf₁t), sin(2πf₁t). Entries are calculated numerically over one bit period.</p>
+          </div>
+        </section>
+
+        <footer class="page-footer"><span>SIGNAL LAB <span class="footer-dot">•</span> DIGITAL COMMUNICATIONS</span><span>ASK / BINARY FSK / CORRELATOR RECEIVERS</span></footer>
+      </main>
+    </div>
+  </body>
+</html>
